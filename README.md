@@ -47,6 +47,18 @@ nohup ollama serve &
 mvn spring-boot:run
 ```
 
+### Production:
+```bash
+# Development create jar and copy to production server
+mvn clean package -DskipTests
+scp target/deepseek-api-1.0.0.jar user@server:/targetPath/
+scp arepas_reina_pepiada.spanish.txt user@server:/targetPath/
+
+# run on your production server
+FILE=arepas_reina_pepiada.spanish.txt java -jar /targetPath/deepseek-api.jar
+```
+
+
 Test Contextual DeepSeek API:
 
 ```bash

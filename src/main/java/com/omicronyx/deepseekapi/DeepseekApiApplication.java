@@ -13,17 +13,22 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
-
 @SpringBootApplication
 @RestController
 public class DeepseekApiApplication {
     private static final String MODEL = "deepseek-r1:8b";
     private static final String HOST = "http://localhost:11434/";
-    private static final String FILE_PATH = System.getenv().getOrDefault("DATA_FILE_PATH", "arepas_reina_pepiada.spanish.txt");
-    private static final Config CONFIG = extractTopicAndLanguage(FILE_PATH);
-    private static final OllamaAPI OLLAMA_API = new OllamaAPI(HOST);
+    private static OllamaAPI OLLAMA_API = new OllamaAPI(HOST);
+    private static Config CONFIG;
+    private static String filePath;
 
     public static void main(String[] args) {
+        filePath = System.getenv().getOrDefault("FILE", "arepas_reina_pepiada.spanish.txt");
+
+        // Configura el archivo y el modelo
+        CONFIG = extractTopicAndLanguage(filePath);
+        OLLAMA_API = new OllamaAPI(HOST);
+
         SpringApplication.run(DeepseekApiApplication.class, args);
         log("SERVER", "API server running");
     }
@@ -35,7 +40,7 @@ public class DeepseekApiApplication {
         String query = body.getOrDefault("query", "Hello");
         log(clientIp, "Processing /ask request");
 
-        String data = readFileData();
+        String data = readFileData(filePath);
         if (data == null) return Map.of("error", "Data file is missing or cannot be read.");
 
         try {
@@ -66,12 +71,12 @@ public class DeepseekApiApplication {
     private static Config extractTopicAndLanguage(String fileName) {
         String[] parts = fileName.replace(".txt", "").split("\\.");
         if (parts.length != 2) throw new IllegalArgumentException("Invalid file name format. Expected {topic}.{language}.txt");
-        return new Config(parts[0].replace("_", " "), capitalize(parts[1]));
+        return new Config(fileName, parts[0].replace("_", " "), capitalize(parts[1]));
     }
 
-    private static String readFileData() {
+    private static String readFileData(String filePath) {
         try {
-            return Files.readString(Path.of(FILE_PATH));
+            return Files.readString(Path.of(filePath));
         } catch (IOException e) {
             log("SERVER", "Error reading the file: " + e.getMessage());
             return null;
@@ -128,5 +133,5 @@ public class DeepseekApiApplication {
         );
     }
 
-    private record Config(String topic, String language) {}
+    private record Config(String filename, String topic, String language) {}
 }
