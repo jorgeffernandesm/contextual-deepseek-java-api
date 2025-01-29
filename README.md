@@ -14,7 +14,7 @@
 
 - **Ollama** installed and configured
 - **DeepSeek AI** (using Ollama)
-- **Java 21** or higher
+- **Java 17** or higher
 - **Maven** (or Gradle) as a build tool
 
 ## Installation
